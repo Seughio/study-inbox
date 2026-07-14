@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://study-inbox.local/contracts/conversation-event.schema.json",
+  "title": "Conversation event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event_id", "source", "question", "answer", "captured_at"],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "source": {
+      "type": "string",
+      "enum": ["chatgpt"]
+    },
+    "conversation_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "question": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000
+    },
+    "answer": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100000
+    },
+    "captured_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
