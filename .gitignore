@@ -5,6 +5,9 @@ __pycache__/
 .pytest_cache/
 .pytest-tmp*/
 .demo-data/
+.milestone-2a-data/
+.milestone-2a-chrome-profile/
+.milestone-2a-edge-profile/
 
 test-data/
 *.db
@@ -21,3 +24,7 @@ build/
 *.egg-info/
 
 .env
+
+apps/extension/node_modules/
+apps/extension/dist/
+apps/extension/coverage/

@@ -1,0 +1,44 @@
+# Study Inbox Extension
+
+Milestone 2A 是 Chrome/Edge Manifest V3 扩展的本地公共核心。它只在项目自建的
+`http://127.0.0.1:4173` 模拟页运行，只向
+`http://127.0.0.1:8765` 发送事件，不包含任何真实 AI 网站选择器。
+
+## 数据流
+
+```text
+LocalFixtureAdapter
+  → content script / CompletionDetector / TurnProcessor
+  → background service worker
+  → LocalApiClient 或 chrome.storage.local RetryQueue
+  → FastAPI → SQLite → Markdown
+```
+
+适配器不得调用 API 或管理队列。后台固定 API origin，不接受页面传入 URL。
+
+## 文本规范化与 event_id
+
+规范化集中在 `src/shared/normalization.ts`：
+
+1. CRLF 和 CR 统一为 LF；
+2. 每行的制表符和连续水平空格折叠为一个空格；
+3. 删除每行首尾空白；
+4. 删除全文首尾空行；
+5. 三个及以上连续换行折叠为两个。
+
+`event_id` 是以下数组 JSON 表示的 SHA-256 十六进制摘要：`source`、
+`conversation_id`、规范化问题、规范化最终答案。`captured_at` 不参与哈希，因此刷新、
+DOM 重建和重复扫描不会改变 ID。推理区不进入最终答案或哈希。
+
+## 开发命令
+
+从仓库根目录运行：
+
+```powershell
+.\scripts\setup-extension.ps1
+.\scripts\test-extension.ps1
+.\scripts\build-extension.ps1
+.\scripts\start-fixture-page.ps1
+```
+
+人工验收见 `docs/extension-manual-acceptance.md`。

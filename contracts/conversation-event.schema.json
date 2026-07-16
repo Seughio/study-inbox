@@ -13,7 +13,7 @@
     },
     "source": {
       "type": "string",
-      "enum": ["chatgpt"]
+      "enum": ["chatgpt", "local-fixture"]
     },
     "conversation_id": {
       "type": "string",

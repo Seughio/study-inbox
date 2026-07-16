@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN" data-study-inbox-fixture>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>本地 AI 对话模拟页</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-conversation-id="local-deepseek-style-fixture">
+    <header>
+      <h1>本地 AI 文字问答模拟页</h1>
+      <p>仅使用脱敏合成内容；DOM 为本项目自定义，不对应任何真实网站。</p>
+    </header>
+    <nav aria-label="模拟场景">
+      <button data-scenario="learning">普通学习问答</button>
+      <button data-scenario="non-learning">非学习问答</button>
+      <button data-scenario="multi">多轮连续问答</button>
+      <button data-scenario="streaming">流式学习回答</button>
+      <button data-scenario="reasoning">推理与最终答案</button>
+      <button data-scenario="code">代码块</button>
+      <button data-scenario="table">Markdown 表格</button>
+      <button data-scenario="irrelevant">完成后无关变化</button>
+      <button data-scenario="regenerate">重新生成回答</button>
+      <button data-scenario="empty">空回答</button>
+      <button data-scenario="incomplete">结构不完整</button>
+      <button data-scenario="reload">刷新并重载同一问答</button>
+    </nav>
+    <p id="fixture-status" role="status">等待操作</p>
+    <main id="conversation" aria-live="polite"></main>
+    <script src="fixture.js"></script>
+  </body>
+</html>

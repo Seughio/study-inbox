@@ -1,0 +1,12 @@
+:root { font-family: system-ui, sans-serif; color: #182230; background: #f5f7fa; }
+body { max-width: 980px; margin: 0 auto; padding: 24px; }
+header, nav, article { background: white; border: 1px solid #d0d5dd; border-radius: 10px; }
+header { padding: 18px; }
+nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; padding: 12px; }
+button { padding: 8px 10px; cursor: pointer; }
+article { margin: 12px 0; padding: 16px; }
+[data-role="user"] { font-weight: 650; }
+[data-role="reasoning"] { color: #667085; border-left: 3px solid #98a2b3; padding-left: 10px; }
+[data-role="final-answer"] { white-space: pre-wrap; }
+pre { overflow-x: auto; background: #101828; color: #f2f4f7; padding: 12px; }
+.actions { margin-top: 8px; color: #667085; }
