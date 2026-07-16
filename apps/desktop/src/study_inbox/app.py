@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, status
 from jsonschema.exceptions import ValidationError
 
+from study_inbox import __version__
 from study_inbox.classifier import MockClassifier
 from study_inbox.config import Settings
 from study_inbox.database import ConversationRepository
@@ -13,6 +14,7 @@ from study_inbox.exporter import MarkdownExporter
 from study_inbox.models import (
     ConversationEvent,
     ExportResponse,
+    HealthResponse,
     IngestResponse,
     StoredConversation,
 )
@@ -32,6 +34,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         yield
 
     app = FastAPI(title="Study Inbox Local API", version="0.1.0", lifespan=lifespan)
+
+    @app.get("/health", response_model=HealthResponse)
+    def health() -> HealthResponse:
+        return HealthResponse(
+            status="ok",
+            application_version=__version__,
+            classifier_type=type(classifier).__name__,
+            database_path=str(resolved_settings.database_path.resolve()),
+            export_directory=str(resolved_settings.export_directory.resolve()),
+        )
 
     @app.post(
         "/api/v1/conversations",

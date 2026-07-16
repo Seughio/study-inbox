@@ -1,0 +1,8 @@
+{
+  "event_id": "fixture-non-learning",
+  "source": "chatgpt",
+  "conversation_id": "fixture-sanitized-daily",
+  "question": "今天午餐可以怎样搭配？",
+  "answer": "可以选择一份主食、一份蔬菜和适量蛋白质，并按个人口味调整。",
+  "captured_at": "2026-06-01T08:10:00Z"
+}

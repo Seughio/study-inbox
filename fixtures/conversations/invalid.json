@@ -1,0 +1,7 @@
+{
+  "event_id": "fixture-invalid",
+  "source": "unsupported-example",
+  "conversation_id": "fixture-sanitized-invalid",
+  "question": "这是一条用于验证契约拒绝行为的无效示例。",
+  "captured_at": "not-a-date"
+}

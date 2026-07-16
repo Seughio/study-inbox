@@ -1,6 +1,6 @@
 # Study Inbox Desktop
 
-Milestone 1 提供一个仅用于本机开发的 FastAPI 服务。它接收单轮问答事件，
+Milestone 1.5 提供一个仅用于本机开发和验收的 FastAPI 服务。它接收单轮问答事件，
 使用确定性的 `MockClassifier` 分类，将结果保存在 SQLite 中，并按学科导出
 Markdown。当前没有浏览器插件、文件监控或真实 LLM 集成。
 
@@ -50,6 +50,7 @@ Invoke-RestMethod -Method Post `
 
 接口：
 
+- `GET /health`
 - `POST /api/v1/conversations`
 - `GET /api/v1/conversations`
 - `POST /api/v1/export/markdown`
@@ -59,6 +60,14 @@ Invoke-RestMethod -Method Post `
 幂等，但不会进入 Markdown 导出。
 
 ## 测试与检查
+
+推荐从仓库根目录使用 Windows 脚本：
+
+```powershell
+.\scripts\test.ps1
+```
+
+也可以分别运行：
 
 ```powershell
 python -m pytest apps/desktop/tests

@@ -10,6 +10,21 @@ from study_inbox.app import create_app
 from study_inbox.config import Settings, repository_root
 
 
+def test_health_reports_local_runtime_configuration(
+    client: TestClient, tmp_path: Path, export_directory: Path
+) -> None:
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "ok",
+        "application_version": "0.1.0",
+        "classifier_type": "MockClassifier",
+        "database_path": str((tmp_path / "study-inbox.sqlite3").resolve()),
+        "export_directory": str(export_directory.resolve()),
+    }
+
+
 def test_writes_and_lists_learning_conversation(client: TestClient) -> None:
     response = client.post("/api/v1/conversations", json=make_event())
 

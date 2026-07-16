@@ -1,0 +1,8 @@
+{
+  "event_id": "fixture-learning-ai",
+  "source": "chatgpt",
+  "conversation_id": "fixture-sanitized-ai",
+  "question": "计算机课程中的人工智能算法如何从示例中学习？",
+  "answer": "算法通过训练数据调整内部参数，再使用未见过的数据评估泛化效果。",
+  "captured_at": "2026-06-01T08:05:00Z"
+}

@@ -35,6 +35,14 @@ class ExportResponse(BaseModel):
     conversation_count: int
 
 
+class HealthResponse(BaseModel):
+    status: str
+    application_version: str
+    classifier_type: str
+    database_path: str
+    export_directory: str
+
+
 @dataclass(frozen=True)
 class ConversationEvent:
     event_id: str

@@ -1,0 +1,8 @@
+{
+  "event_id": "fixture-learning-thermodynamics",
+  "source": "chatgpt",
+  "conversation_id": "fixture-sanitized-thermodynamics",
+  "question": "请解释物理课程中热力学第一定律的含义。",
+  "answer": "热力学第一定律说明能量不会凭空产生或消失，系统内能的变化等于传入热量与外界对系统做功之和。",
+  "captured_at": "2026-06-01T08:00:00Z"
+}
