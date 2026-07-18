@@ -7,6 +7,7 @@ interface ExtensionManifest {
   permissions: string[];
   host_permissions: string[];
   optional_host_permissions: string[];
+  content_scripts: Array<{ matches: string[] }>;
 }
 
 async function readManifest(): Promise<ExtensionManifest> {
@@ -24,6 +25,9 @@ describe("manifest permissions", () => {
       "http://127.0.0.1:8765/*"
     ]);
     expect(manifest.optional_host_permissions).toEqual(["https://chat.deepseek.com/*"]);
+    expect(manifest.content_scripts.flatMap(({ matches }) => matches)).toEqual([
+      "http://127.0.0.1:4173/*"
+    ]);
     expect(manifest.permissions).not.toEqual(
       expect.arrayContaining(["tabs", "history", "downloads", "cookies", "webRequest", "debugger"])
     );

@@ -1,7 +1,9 @@
 import { BackgroundController } from "./controller";
 import type { RuntimeRequest, RuntimeResponse } from "../shared/messages";
+import { installDeepSeekContentScriptRegistration } from "./deepseek-content-registration";
 
 const controller = new BackgroundController();
+installDeepSeekContentScriptRegistration();
 
 chrome.runtime.onMessage.addListener(
   (

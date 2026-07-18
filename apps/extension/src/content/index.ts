@@ -1,9 +1,24 @@
+import { DeepSeekAdapter } from "../adapters/deepseek-adapter";
 import { LocalFixtureAdapter } from "../adapters/local-fixture-adapter";
+import type { ConversationAdapter } from "../adapters/types";
+import type { ConversationSource } from "../shared/contracts";
 import type { RuntimeRequest, RuntimeResponse } from "../shared/messages";
 import { CompletionDetector } from "./completion-detector";
 import { TurnProcessor } from "./turn-processor";
 
-const adapter = new LocalFixtureAdapter(document);
+interface AdapterRegistration {
+  adapter: ConversationAdapter;
+  source: ConversationSource;
+}
+
+const registrations: AdapterRegistration[] = [
+  { adapter: new LocalFixtureAdapter(document), source: "local-fixture" },
+  { adapter: new DeepSeekAdapter(document), source: "deepseek" }
+];
+const currentUrl = new URL(location.href);
+const registration = registrations.find(({ adapter }) =>
+  adapter.canHandle(currentUrl, document)
+);
 let enabled = true;
 
 async function loadEnabled(): Promise<void> {
@@ -11,10 +26,12 @@ async function loadEnabled(): Promise<void> {
   enabled = stored.enabled !== false;
 }
 
-if (adapter.canHandle(new URL(location.href), document)) {
+if (registration) {
   void loadEnabled().then(() => {
+    const { adapter, source } = registration;
     const processor = new TurnProcessor({
       conversationId: adapter.getConversationId(),
+      source,
       detector: new CompletionDetector(),
       isEnabled: () => enabled,
       submit: async (event) => {

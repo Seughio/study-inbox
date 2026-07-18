@@ -3,9 +3,10 @@
 Study Inbox 自动整理已经产生的学习问答。Milestone 2A 在现有本地 FastAPI、
 SQLite 和 Markdown 闭环上增加了平台无关的 Manifest V3 扩展公共核心与本地模拟页。
 
-Milestone 2B-0 增加了由用户主动授权、主动点击才运行的 DeepSeek DOM 侦察开发工具，
-但尚未实现真实网站适配器或选择器。它不读取 Cookie、Web Storage 或网络请求。
-项目仍不包含文件监控、真实 LLM 或复杂前端。
+Milestone 2B-1 增加了由真实脱敏 fixture 验证的最小 DeepSeekAdapter。它只在用户授予
+可选 `https://chat.deepseek.com/*` 权限后运行，支持普通文字问答、三轮配对、刷新去重
+和稳定窗口流式完成，不读取 Cookie、Web Storage 或页面网络请求。项目仍不包含文件
+监控、真实 LLM 或复杂前端。
 
 ## 5 分钟快速验收
 
@@ -43,12 +44,13 @@ Milestone 2B-0 增加了由用户主动授权、主动点击才运行的 DeepSee
 扩展安装、构建、本地模拟页面和离线队列验收步骤见
 [Extension 手工验收指南](docs/extension-manual-acceptance.md)。
 
-## Milestone 2B-0 DOM 侦察
+## Milestone 2B DeepSeek 最小适配
 
 DeepSeek 侦察、单节点导出和隐私检查流程见
 [DeepSeek DOM 人工侦察指南](docs/deepseek-dom-reconnaissance.md)，当前证据与明确排除项见
-[DeepSeek 选择器设计报告](docs/deepseek-selector-report.md)。仓库目前只有占位 fixture，
-没有真实 DeepSeek DOM；满足报告中的输入条件前不得开始正式适配器。
+[DeepSeek 选择器设计报告](docs/deepseek-selector-report.md)。DeepSeek 的真实 Edge 验收步骤见
+[Extension 手工验收指南](docs/extension-manual-acceptance.md)。推理、停止、重生成、编辑、
+文件、图片、语音和联网引用仍不支持。
 
 ## 自动检查
 

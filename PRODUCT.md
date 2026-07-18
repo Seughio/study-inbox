@@ -37,7 +37,7 @@ Windows 客户端监控用户指定的下载目录。
 
 - Windows 10/11
 - Chrome 和 Edge
-- 第一个真实 AI 网站计划支持 DeepSeek（Milestone 2B）
+- 第一个真实 AI 网站为 DeepSeek；Milestone 2B-1 先支持最小普通文字问答
 - 仅监控用户指定的下载目录
 - 支持 PDF、DOCX、PPTX、TXT、MD
 - 所有文件移动必须经过用户确认

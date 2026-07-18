@@ -42,4 +42,17 @@ describe("conversation event", () => {
     });
     expect(validate(event), JSON.stringify(validate.errors)).toBe(true);
   });
+
+  it("accepts a DeepSeek event in the shared JSON Schema", async () => {
+    const ajv = new Ajv2020({ strict: true });
+    addFormats(ajv);
+    const validate = ajv.compile(schema);
+    const event = await createConversationEvent({
+      source: "deepseek",
+      conversationId: "deepseek-page",
+      question: "合成物理问题",
+      answer: "合成物理回答"
+    });
+    expect(validate(event), JSON.stringify(validate.errors)).toBe(true);
+  });
 });

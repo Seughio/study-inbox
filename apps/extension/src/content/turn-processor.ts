@@ -1,11 +1,12 @@
 import type { TurnSnapshot } from "../adapters/types";
-import type { ConversationEvent } from "../shared/contracts";
+import type { ConversationEvent, ConversationSource } from "../shared/contracts";
 import { createConversationEvent } from "../shared/event";
 import { normalizeText } from "../shared/normalization";
 import type { CompletionDetector } from "./completion-detector";
 
 export interface TurnProcessorOptions {
   conversationId: string;
+  source?: ConversationSource;
   detector: CompletionDetector;
   isEnabled: () => boolean;
   submit: (event: ConversationEvent) => Promise<void>;
@@ -37,7 +38,7 @@ export class TurnProcessor {
   private async finalize(question: string, answer: string): Promise<void> {
     if (!this.options.isEnabled()) return;
     const event = await createConversationEvent({
-      source: "local-fixture",
+      source: this.options.source ?? "local-fixture",
       conversationId: this.options.conversationId,
       question,
       answer

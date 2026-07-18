@@ -29,6 +29,16 @@ LocalFixtureAdapter → content script → background service worker →
 属于平台无关公共核心。第一个真实网站适配器计划为 DeepSeek，属于 Milestone 2B，
 不得复用模拟页 DOM 作为真实网站选择器。
 
+### Milestone 2B-1 DeepSeek 最小适配器
+
+DeepSeekAdapter 只在用户授予 `https://chat.deepseek.com/*` 可选权限后动态注册 content
+script。它依据真实脱敏 fixture 验证的语义 DOM 提取普通问答，并复用 Milestone 2A 的
+CompletionDetector、TurnProcessor、background、RetryQueue 和本地 FastAPI 链路。
+
+适配器不读取 Cookie、Web Storage、页面网络请求、URL 会话 ID 或哈希 class。没有可靠
+完成属性时，操作区只作为生成中阻断门槛，最终完成仍由公共稳定窗口判断。不确定或未
+支持的推理、停止、重生成、编辑、文件和联网引用结构安全失败。
+
 ## Desktop Agent
 
 职责：
