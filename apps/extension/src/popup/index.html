@@ -17,6 +17,36 @@
       </dl>
       <button id="retry" type="button">立即重试</button>
       <p id="message" role="status"></p>
+      <details class="recon">
+        <summary>DeepSeek DOM 侦察（开发工具）</summary>
+        <label class="toggle">
+          <input id="recon-mode" type="checkbox" /> 我已启用侦察开发模式
+        </label>
+        <p>默认不运行、不读取正文。仅用于全新脱敏对话。</p>
+        <button id="recon-authorize" type="button" disabled>主动授权 DeepSeek 页面</button>
+        <button id="recon-inspect" type="button" disabled>导出结构快照</button>
+        <button id="recon-select" type="button" disabled>选择单个对话节点</button>
+        <section id="recon-preview" class="recon-preview" hidden>
+          <h2>已选中节点</h2>
+          <dl>
+            <dt>标签名</dt><dd id="recon-node">无</dd>
+            <dt>class</dt><dd id="recon-classes">无</dd>
+            <dt>文本长度</dt><dd id="recon-text-length">0</dd>
+            <dt>HTML 字符数</dt><dd id="recon-html-length">0</dd>
+            <dt>子节点数量</dt><dd id="recon-child-count">0</dd>
+            <dt>选中时间</dt><dd id="recon-selected-at">无</dd>
+            <dt>来源域名</dt><dd id="recon-source-domain">无</dd>
+          </dl>
+          <p id="recon-warning" class="recon-warning" role="alert" hidden></p>
+          <label for="recon-debug">可复制节点摘要（不含正文）</label>
+          <textarea id="recon-debug" rows="7" readonly></textarea>
+          <button id="recon-reselect" type="button">重新选择</button>
+          <button id="recon-clear" type="button">清除选择</button>
+          <button id="recon-read" type="button">读取待脱敏 HTML</button>
+        </section>
+        <textarea id="recon-output" rows="8" readonly aria-label="侦察输出"></textarea>
+        <p id="recon-message" role="status"></p>
+      </details>
     </main>
     <script type="module" src="index.js"></script>
   </body>

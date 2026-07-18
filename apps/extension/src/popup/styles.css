@@ -7,3 +7,12 @@ dt { color: #667085; }
 dd { margin: 0; text-align: right; }
 button { width: 100%; padding: 7px; }
 #message { min-height: 18px; margin-bottom: 0; color: #475467; }
+.recon { margin-top: 12px; border-top: 1px solid #d0d5dd; padding-top: 10px; }
+.recon p { font-size: 12px; color: #667085; }
+.recon button { margin-top: 6px; }
+.recon textarea { box-sizing: border-box; width: 100%; margin-top: 8px; font: 11px monospace; }
+.recon-preview { margin-top: 10px; padding: 8px; border: 1px solid #d0d5dd; border-radius: 5px; }
+.recon-preview h2 { margin: 0 0 6px; font-size: 14px; }
+.recon-preview dl { grid-template-columns: 92px minmax(0, 1fr); font-size: 12px; }
+.recon-preview dd { overflow-wrap: anywhere; }
+.recon-warning { white-space: pre-line; padding: 6px; border-left: 3px solid #d92d20; background: #fef3f2; color: #912018 !important; }

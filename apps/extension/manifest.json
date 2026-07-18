@@ -2,12 +2,13 @@
   "manifest_version": 3,
   "name": "Study Inbox Local Fixture",
   "version": "0.2.0",
-  "description": "Milestone 2A local-only conversation capture demonstration.",
-  "permissions": ["storage"],
+  "description": "Local fixture capture with an opt-in DeepSeek DOM reconnaissance tool.",
+  "permissions": ["storage", "scripting"],
   "host_permissions": [
     "http://127.0.0.1:4173/*",
     "http://127.0.0.1:8765/*"
   ],
+  "optional_host_permissions": ["https://chat.deepseek.com/*"],
   "background": {
     "service_worker": "background/index.js",
     "type": "module"
