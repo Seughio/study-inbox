@@ -4,6 +4,8 @@ import type { ConversationAdapter } from "../adapters/types";
 import type { ConversationSource } from "../shared/contracts";
 import type { RuntimeRequest, RuntimeResponse } from "../shared/messages";
 import { CompletionDetector } from "./completion-detector";
+import { DeepSeekCaptureSession } from "./deepseek-capture-session";
+import { DeepSeekSuppressionStore } from "./deepseek-suppression";
 import { TurnProcessor } from "./turn-processor";
 
 interface AdapterRegistration {
@@ -39,20 +41,36 @@ if (registration) {
         await chrome.runtime.sendMessage<RuntimeRequest, RuntimeResponse>(request);
       }
     });
-    const scan = (): void => {
-      if (!enabled) return;
-      for (const element of adapter.getTurnElements()) {
-        const snapshot = adapter.extractTurnSnapshot(element);
-        if (snapshot) processor.process(snapshot);
+    const deepSeekSession = source === "deepseek" && adapter instanceof DeepSeekAdapter
+      ? new DeepSeekCaptureSession(
+          adapter,
+          processor,
+          new DeepSeekSuppressionStore(adapter.getConversationId())
+        )
+      : null;
+    const scan = async (scanEnabled: boolean): Promise<void> => {
+      if (deepSeekSession) {
+        await deepSeekSession.scan(scanEnabled);
+      } else if (scanEnabled) {
+        for (const element of adapter.getTurnElements()) {
+          const snapshot = adapter.extractTurnSnapshot(element);
+          if (snapshot) processor.process(snapshot);
+        }
       }
     };
-    adapter.startObserving(scan);
+    let scanQueue = Promise.resolve();
+    const scheduleScan = (): void => {
+      const scanEnabled = enabled;
+      const run = (): Promise<void> => scan(scanEnabled);
+      scanQueue = scanQueue.then(run, run).catch(() => undefined);
+    };
+    adapter.startObserving(scheduleScan);
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area !== "local" || !changes.enabled) return;
       enabled = changes.enabled.newValue !== false;
-      if (enabled) scan();
-      else processor.pause();
+      if (!enabled) processor.pause();
+      scheduleScan();
     });
-    scan();
+    scheduleScan();
   });
 }
