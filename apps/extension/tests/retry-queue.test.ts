@@ -46,6 +46,35 @@ describe("RetryQueue", () => {
     expect(await queue.count()).toBe(1);
   });
 
+  it("removes an event only after a successful retry", async () => {
+    const store = new MemoryStore();
+    const queue = new RetryQueue(store);
+    await queue.enqueue(event(1));
+    await queue.retry({ send: async () => { throw new Error("offline"); } });
+    expect(store.queue).toEqual([event(1)]);
+    await queue.retry({ send: async () => "duplicate" as const });
+    expect(store.queue).toEqual([]);
+  });
+
+  it("does not overwrite an event enqueued while a retry is in progress", async () => {
+    const store = new MemoryStore();
+    const queue = new RetryQueue(store);
+    await queue.enqueue(event(1));
+    let releaseSend: (() => void) | undefined;
+    const sendBlocked = new Promise<void>((resolve) => { releaseSend = resolve; });
+    const retrying = queue.retry({
+      send: async () => {
+        await sendBlocked;
+        return "sent" as const;
+      }
+    });
+    await vi.waitFor(() => expect(releaseSend).toBeDefined());
+    const enqueuing = queue.enqueue(event(2));
+    releaseSend?.();
+    await Promise.all([retrying, enqueuing]);
+    expect(store.queue).toEqual([event(2)]);
+  });
+
   it("never grows beyond its configured maximum", async () => {
     const store = new MemoryStore();
     const queue = new RetryQueue(store, 3);

@@ -18,18 +18,34 @@ export class BackgroundController {
     try {
       const outcome = await this.api.send(event);
       await this.store.setSendState(outcome);
-      void this.retry();
       return outcome;
-    } catch (error) {
-      await this.queue.enqueue(event);
-      await this.store.setSendState("queued", safeError(error));
+    } catch (sendError) {
+      try {
+        await this.queue.enqueue(event);
+      } catch (queueError) {
+        await this.store.setSendState("error", "retry queue persistence failed");
+        throw queueError;
+      }
+      await this.store.setSendState("queued", safeError(sendError));
       return "queued";
     }
   }
 
   public async retry(): Promise<{ sent: number; remaining: number }> {
-    const result = await this.queue.retry(this.api);
-    if (result.sent > 0) {
+    let retryError: unknown;
+    const result = await this.queue.retry({
+      send: async (event) => {
+        try {
+          return await this.api.send(event);
+        } catch (error) {
+          retryError = error;
+          throw error;
+        }
+      }
+    });
+    if (result.remaining > 0) {
+      await this.store.setSendState("queued", safeError(retryError));
+    } else if (result.sent > 0) {
       await this.store.setSendState(result.remaining ? "queued" : "sent");
     }
     return result;
@@ -42,6 +58,10 @@ export class BackgroundController {
       this.queue.count()
     ]);
     return { ...state, serviceOnline, retryCount };
+  }
+
+  public async retryCount(): Promise<number> {
+    return this.queue.count();
   }
 
   public async setEnabled(enabled: boolean): Promise<void> {

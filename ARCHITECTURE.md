@@ -35,6 +35,10 @@ DeepSeekAdapter 只在用户授予 `https://chat.deepseek.com/*` 可选权限后
 script。它依据真实脱敏 fixture 验证的语义 DOM 提取普通问答，并复用 Milestone 2A 的
 CompletionDetector、TurnProcessor、background、RetryQueue 和本地 FastAPI 链路。
 
+RetryQueue 使用 `chrome.storage.local` 持久化；队列非空时由 `chrome.alarms` 创建 1 分钟
+周期的 MV3 后台唤醒。background 中的 alarm、启动恢复、入队即时重试和 popup 手动重试
+共用单飞 flush，队列清空后取消 alarm。
+
 适配器不读取 Cookie、Web Storage、页面网络请求、URL 会话 ID 或哈希 class。没有可靠
 完成属性时，操作区只作为生成中阻断门槛，最终完成仍由公共稳定窗口判断。不确定或未
 支持的推理、停止、重生成、编辑、文件和联网引用结构安全失败。

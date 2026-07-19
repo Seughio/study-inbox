@@ -19,7 +19,7 @@ describe("manifest permissions", () => {
   it("keeps DeepSeek access optional and requests no prohibited capability", async () => {
     const manifest = await readManifest();
 
-    expect(manifest.permissions).toEqual(["storage", "scripting"]);
+    expect(manifest.permissions).toEqual(["storage", "scripting", "alarms"]);
     expect(manifest.host_permissions).toEqual([
       "http://127.0.0.1:4173/*",
       "http://127.0.0.1:8765/*"

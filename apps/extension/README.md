@@ -16,11 +16,21 @@ LocalFixtureAdapter 或 DeepSeekAdapter
   → content script / CompletionDetector / TurnProcessor
   → background service worker
   → LocalApiClient 或 chrome.storage.local RetryQueue
+  → chrome.alarms 持久化唤醒重试
   → FastAPI → SQLite → Markdown
 ```
 
 适配器不得调用 API 或管理队列。两个适配器复用同一个 CompletionDetector、
 TurnProcessor、后台投递与 RetryQueue。后台固定 API origin，不接受页面传入 URL。
+
+RetryQueue 非空时，后台创建名为 `study-inbox-retry-queue` 的 1 分钟周期 alarm；新事件
+入队后会立即重试一次，失败才等待后续 alarm。队列清空后立即取消 alarm。Service
+Worker 每次启动都会从 `chrome.storage.local` 恢复调度状态，不依赖页面刷新、popup、
+长期 `setTimeout` 或 `navigator.onLine`。正常浏览器调度下，服务恢复后的目标最大等待
+时间为 1 分钟；设备休眠或浏览器节流可能造成额外延迟。
+
+Manifest 必需权限为 `storage`、`scripting`、`alarms`：分别用于持久队列/设置、授权后
+动态注册 DeepSeek content script，以及 MV3 Service Worker 的低频持久唤醒。
 
 ## 文本规范化与 event_id
 

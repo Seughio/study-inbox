@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { BackgroundController } from "../src/background/controller";
 import type {
   ConversationEvent,
@@ -40,7 +40,38 @@ describe("BackgroundController", () => {
     const controller = new BackgroundController(store, api, new RetryQueue(store));
     expect(await controller.submit(event)).toBe("queued");
     expect(store.queue).toEqual([event]);
+    expect(store.state.lastSendStatus).toBe("queued");
     expect(store.state.lastError).toBe("local service unavailable");
+  });
+
+  it("queues retryable local API errors and deduplicates repeated failures", async () => {
+    const store = new TestStore();
+    const api = {
+      send: vi.fn(async () => { throw new Error("local API returned 503"); }),
+      isOnline: async () => false
+    };
+    const controller = new BackgroundController(store, api, new RetryQueue(store));
+    expect(await controller.submit(event)).toBe("queued");
+    expect(await controller.submit(event)).toBe("queued");
+    expect(store.queue).toEqual([event]);
+    expect(store.state).toMatchObject({
+      lastSendStatus: "queued",
+      lastError: "local API returned 503"
+    });
+  });
+
+  it("does not queue a successful send and clears the previous error", async () => {
+    const store = new TestStore();
+    store.state.lastError = "old error";
+    const api = {
+      send: async () => "sent" as const,
+      isOnline: async () => true
+    };
+    const controller = new BackgroundController(store, api, new RetryQueue(store));
+    expect(await controller.submit(event)).toBe("sent");
+    expect(store.queue).toEqual([]);
+    expect(store.state.lastSendStatus).toBe("sent");
+    expect(store.state.lastError).toBeUndefined();
   });
 
   it("does not send or queue while paused", async () => {
@@ -55,5 +86,37 @@ describe("BackgroundController", () => {
     expect(await controller.submit(event)).toBe("paused");
     expect(called).toBe(false);
     expect(store.queue).toEqual([]);
+  });
+
+  it("keeps queued status on failed retry and clears it only after success", async () => {
+    const store = new TestStore();
+    store.queue = [event];
+    store.state = {
+      enabled: true,
+      lastSendStatus: "sent",
+      lastError: "old error"
+    };
+    let online = false;
+    const api = {
+      send: async () => {
+        if (!online) throw new TypeError("fetch failed");
+        return "sent" as const;
+      },
+      isOnline: async () => online
+    };
+    const controller = new BackgroundController(store, api, new RetryQueue(store));
+
+    expect(await controller.retry()).toEqual({ sent: 0, remaining: 1 });
+    expect(store.queue).toEqual([event]);
+    expect(store.state).toMatchObject({
+      lastSendStatus: "queued",
+      lastError: "local service unavailable"
+    });
+
+    online = true;
+    expect(await controller.retry()).toEqual({ sent: 1, remaining: 0 });
+    expect(store.queue).toEqual([]);
+    expect(store.state.lastSendStatus).toBe("sent");
+    expect(store.state.lastError).toBeUndefined();
   });
 });

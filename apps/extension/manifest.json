@@ -3,7 +3,7 @@
   "name": "Study Inbox",
   "version": "0.2.0",
   "description": "Local fixture capture and an opt-in minimal DeepSeek conversation adapter.",
-  "permissions": ["storage", "scripting"],
+  "permissions": ["storage", "scripting", "alarms"],
   "host_permissions": [
     "http://127.0.0.1:4173/*",
     "http://127.0.0.1:8765/*"

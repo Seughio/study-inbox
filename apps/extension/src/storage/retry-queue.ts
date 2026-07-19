@@ -6,38 +6,51 @@ export interface EventTransport {
 }
 
 export class RetryQueue {
+  private operations: Promise<void> = Promise.resolve();
+
   public constructor(
     private readonly store: QueueStore,
     private readonly maximumSize = 100
   ) {}
 
   public async enqueue(event: ConversationEvent): Promise<void> {
-    const queue = await this.store.getQueue();
-    if (queue.some((queued) => queued.event_id === event.event_id)) return;
-    const bounded = [...queue, event].slice(-this.maximumSize);
-    await this.store.setQueue(bounded);
+    await this.exclusive(async () => {
+      const queue = await this.store.getQueue();
+      if (queue.some((queued) => queued.event_id === event.event_id)) return;
+      const bounded = [...queue, event].slice(-this.maximumSize);
+      await this.store.setQueue(bounded);
+    });
   }
 
   public async count(): Promise<number> {
-    return (await this.store.getQueue()).length;
+    return this.exclusive(async () => (await this.store.getQueue()).length);
   }
 
   public async retry(transport: EventTransport): Promise<{
     sent: number;
     remaining: number;
   }> {
-    const queue = await this.store.getQueue();
-    const remaining: ConversationEvent[] = [];
-    let sent = 0;
-    for (const event of queue) {
-      try {
-        await transport.send(event);
-        sent++;
-      } catch {
-        remaining.push(event);
+    return this.exclusive(async () => {
+      const queue = await this.store.getQueue();
+      const sentIds = new Set<string>();
+      for (const event of queue) {
+        try {
+          await transport.send(event);
+          sentIds.add(event.event_id);
+        } catch {
+          // Failed events remain in the persisted queue.
+        }
       }
-    }
-    await this.store.setQueue(remaining);
-    return { sent, remaining: remaining.length };
+      const latestQueue = await this.store.getQueue();
+      const remaining = latestQueue.filter((event) => !sentIds.has(event.event_id));
+      await this.store.setQueue(remaining);
+      return { sent: sentIds.size, remaining: remaining.length };
+    });
+  }
+
+  private async exclusive<T>(operation: () => Promise<T>): Promise<T> {
+    const result = this.operations.then(operation, operation);
+    this.operations = result.then(() => undefined, () => undefined);
+    return result;
   }
 }

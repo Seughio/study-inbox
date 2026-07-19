@@ -64,14 +64,20 @@ Chrome 打开 `chrome://extensions`，Edge 打开 `edge://extensions`：
 
 1. 在 FastAPI 窗口按 `Ctrl+C`；
 2. 在模拟页生成一条新学习问答；
-3. popup 应显示本地服务离线、待重试数量增加；
-4. 用第 2 节相同命令恢复 FastAPI；
-5. 点击 popup 的“立即重试”；
-6. 确认待重试恢复为 0，最近发送为 `sent`；
-7. 查询 API 记录，确认离线事件已写入。
+3. popup 应显示本地服务离线、待重试数量增加且最近发送状态为 `queued`；
+4. 在扩展 Service Worker 控制台执行 `chrome.storage.local.get()`，确认
+   `retryQueue` 包含完整事件且 `event_id` 与本次问答一致；
+5. 执行 `chrome.alarms.get("study-inbox-retry-queue")`，确认存在 1 分钟周期 alarm；
+6. 重新加载扩展或重启 Service Worker，确认 `retryQueue` 和 alarm 均已恢复；
+7. 用第 2 节相同命令恢复 FastAPI，此时不要刷新对话页面、不要打开 popup、不要进行其他操作；
+8. 等待最多 1 分钟并查询 API，确认离线事件自动写入一次；再检查队列为空、alarm 已取消、最近发送为 `sent` 且旧 `lastError` 已清除；
+9. 另做一次离线事件，恢复 FastAPI 后点击 popup“立即重试”，确认手动入口仍可立即清空队列。
 
 队列按 `event_id` 去重，最多保留 100 条；超过上限时移除最旧事件。队列只存在
 `chrome.storage.local`，不会发送到公网，也不会保存完整服务器错误正文。
+自动重试 alarm 名为 `study-inbox-retry-queue`，周期 1 分钟，仅在队列非空时存在。
+正常浏览器调度下，服务恢复后的目标最大等待时间为 1 分钟；设备休眠或浏览器节流可能
+延迟 alarm，因而这不是硬实时保证。
 
 ## 6. 暂停验证
 
@@ -110,7 +116,7 @@ Chrome 打开 `chrome://extensions`，Edge 打开 `edge://extensions`：
 2. 打开 `edge://extensions`，开启开发人员模式，对 Study Inbox 点击“重新加载”；首次安装则选择“加载解压缩的扩展”，目录为 `apps\extension\dist`。
 3. 打开 `https://chat.deepseek.com/`，只新建包含合成测试内容的对话。
 4. 打开扩展 popup，展开“DeepSeek DOM 侦察（开发工具）”，勾选侦察开发模式并点击“主动授权 DeepSeek 页面”。授权成功后可关闭侦察开发模式；可选 host permission 会保留。
-5. 回到 `edge://extensions` 确认扩展没有 `<all_urls>`、Cookie、history、downloads 或 webRequest 权限。
+5. 回到 `edge://extensions`，确认必需权限只有 `storage`、`scripting`、`alarms`，并确认扩展没有 `<all_urls>`、Cookie、history、downloads 或 webRequest 权限。`alarms` 仅用于队列非空时每分钟唤醒 MV3 Service Worker。
 6. 刷新 DeepSeek 页面，使动态注册的 content script 在授权后加载。
 7. 打开 popup，确认主开关“启用采集”已选中、本地服务在线。
 
@@ -139,16 +145,22 @@ Chrome 打开 `chrome://extensions`，Edge 打开 `edge://extensions`：
 4. 再次暂停，在暂停期间开始一条流式回答；正文开始出现后恢复采集，让回答自然完成，确认该问答始终不入库也不进入 RetryQueue。
 5. 保持采集开启，提出一条全新的普通合成问题，确认它在完成后正常新增一次；刷新页面后不得重复新增。
 6. 在 FastAPI 窗口按 `Ctrl+C`，然后完成另一条全新的普通合成问答。
-7. 等待回答稳定后打开 popup，确认本地服务离线且待重试数量增加。
-8. 用第 8.1 节命令恢复相同 `.milestone-2b1-data` FastAPI。
-9. 刷新 DeepSeek 页面以触发同一稳定历史事件；该次成功投递会同时触发现有 RetryQueue 自动重试。
-10. 确认待重试恢复为 0，同一问答在数据库中只有一个 `event_id`，没有重复写入。
+7. 等待回答稳定后打开 popup，确认本地服务离线、待重试数量增加且状态为 `queued`。
+8. 在扩展 Service Worker 控制台执行 `chrome.storage.local.get()`，确认
+   `retryQueue` 中保存了本次完整事件；重新启动 Service Worker 后再次确认事件仍存在。
+9. 用第 8.1 节命令恢复相同 `.milestone-2b1-data` FastAPI，但不要刷新 DeepSeek 页面、不要打开 popup，也不要进行用户操作。
+10. 在正常浏览器调度下等待最多 1 分钟，确认数据库自动新增一次、待重试恢复为 0、状态为 `sent`、旧错误清除，并确认 `study-inbox-retry-queue` alarm 已取消。
+11. 再次制造一条离线事件并恢复服务，点击 popup“立即重试”，确认手动入口仍可立即投递。
+12. 最后刷新 DeepSeek 页面，确认相同 `event_id` 不会造成重复写入。步骤 10 的入库才是
+    alarm 自动重试结果，不能把步骤 12 的 DOM 重扫当作队列恢复证据。
 
 DeepSeek 暂停抑制记录只保存 SHA-256 标识，不保存问题或回答正文；记录位于
 `chrome.storage.local`，最多保留 500 个标识，超过上限时淘汰最旧标识。完成态会从
 临时 turn 标识升级为精确 `event_id`，避免长期依赖页面 key。
 
-现有后台没有定时健康轮询；如果恢复服务后不刷新页面、不产生新成功提交且不重启浏览器，队列不会立即自行唤醒。此时可点击 popup 的“立即重试”。
+自动恢复不进行健康检查轮询；alarm 唤醒时直接 flush 持久队列。失败事件继续保留并维持
+下一次 alarm，成功事件才按 `event_id` 删除。多个 alarm、启动、入队和手动触发共用
+同一个单飞 flush，不会并发发送。
 
 ### 8.5 验收记录
 

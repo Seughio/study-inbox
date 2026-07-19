@@ -31,7 +31,7 @@ export class ChromeLocalStore implements QueueStore {
       enabled: result.enabled !== false,
       lastSendStatus: result.lastSendStatus ?? "never",
       lastSendAt: result.lastSendAt,
-      lastError: result.lastError
+      lastError: typeof result.lastError === "string" ? result.lastError : undefined
     } as ExtensionState;
   }
 
@@ -46,7 +46,7 @@ export class ChromeLocalStore implements QueueStore {
     await chrome.storage.local.set({
       [STORAGE_KEYS.lastSendStatus]: status,
       [STORAGE_KEYS.lastSendAt]: new Date().toISOString(),
-      [STORAGE_KEYS.lastError]: error
+      [STORAGE_KEYS.lastError]: error ?? null
     });
   }
 }
