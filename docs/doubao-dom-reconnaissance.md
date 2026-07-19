@@ -64,8 +64,12 @@ node .\apps\extension\tools\sanitize-chat-fixture.mjs `
 ```
 
 脚本不会内置豆包选择器，也不会根据正文或页面名称猜角色。它删除脚本、样式、媒体与
-事件属性，清理链接查询参数，脱敏敏感属性，用固定合成正文替换匹配到的用户/助手文本，
-再扫描疑似邮箱、手机号、token、随机标识和文件名。原 DeepSeek 命令
+事件属性和所有 inline style，清理链接查询参数，脱敏敏感属性，用固定合成正文替换匹配
+到的用户/助手文本，再扫描疑似邮箱、手机号、token、随机标识和文件名。
+`data-observe-row` 与 `data-message-id` 保留属性名，并按文档内首次出现顺序映射为
+`synthetic-observe-row-N` 和 `synthetic-message-N`；报告只记录匿名化数量，不记录原值、
+摘要或哈希。长随机字符串检测继续覆盖正文和普通属性值，但不会仅因单个 `class` token
+过长而报警；class 中的其他敏感类型仍会检测。原 DeepSeek 命令
 `sanitize-deepseek-fixture.mjs` 仍是同一实现的兼容入口。
 
 ## 检查 report.json 与人工复核
@@ -75,6 +79,8 @@ node .\apps\extension\tools\sanitize-chat-fixture.mjs `
 
 - `matchedMessageNodes.user` 和 `.assistant` 都大于零，且与人工计数一致；
 - `removed.scripts`、`styles`、`media` 和 `eventAttributes` 与原始结构相符；
+- `removed.inlineStyleAttributes` 等于原文件中被删除的 inline style 数量；
+- `anonymizedAttributes.data-observe-row` 和 `.data-message-id` 与实际属性实例数一致；
 - `sensitiveFindingTypes` 必须为空；
 - 脱敏 HTML 中只有固定合成正文，不含账号资料、真实提示词、真实回答、会话 ID、分享
   URL 查询参数、文件名或长随机字符串；
@@ -94,7 +100,8 @@ node .\apps\extension\tools\sanitize-chat-fixture.mjs `
 
 严禁提交 Git：原始 HTML、真实用户或助手正文、账号/头像/昵称、conversation ID、页面
 完整 URL、Cookie、Local/Session Storage、访问 token、分享链接、上传文件信息、截图、
-HAR、数据库或浏览器 profile。当前四份 HTML 是安全占位注释，不是结构证据。
+HAR、数据库或浏览器 profile。当前四份 HTML 已是经脱敏和人工检查的正式结构 fixture；
+仓库外原始文件仍严禁提交。
 
 ## 暂不支持的页面状态
 

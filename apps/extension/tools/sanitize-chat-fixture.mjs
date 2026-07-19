@@ -38,7 +38,8 @@ function countStructure(document) {
       (count, element) =>
         count + [...element.attributes].filter((attribute) => /^on/i.test(attribute.name)).length,
       0
-    )
+    ),
+    inlineStyleAttributes: document.querySelectorAll("[style]").length
   };
 }
 
@@ -73,6 +74,59 @@ export function detectSensitiveContent(html) {
   return DETECTORS.filter(({ expression }) => expression.test(html)).map(({ name }) => name);
 }
 
+function detectSensitiveFindings(document, window) {
+  const findings = [];
+
+  function inspect(value, element, attributeName = null) {
+    for (const { name, expression } of DETECTORS) {
+      if (attributeName === "class" && name === "long-random-string") continue;
+      if (expression.test(value)) {
+        findings.push({
+          type: name,
+          tagName: element.tagName.toLowerCase(),
+          attributeName
+        });
+      }
+    }
+  }
+
+  const walker = document.createTreeWalker(document.documentElement, window.NodeFilter.SHOW_TEXT);
+  let textNode = walker.nextNode();
+  while (textNode) {
+    const parent = textNode.parentElement;
+    if (parent && textNode.textContent) inspect(textNode.textContent, parent);
+    textNode = walker.nextNode();
+  }
+  document.querySelectorAll("*").forEach((element) => {
+    [...element.attributes].forEach((attribute) => {
+      inspect(attribute.value, element, attribute.name.toLowerCase());
+    });
+  });
+  return findings;
+}
+
+function anonymizeDocumentAttributes(document) {
+  const definitions = {
+    "data-observe-row": { prefix: "synthetic-observe-row", values: new Map() },
+    "data-message-id": { prefix: "synthetic-message", values: new Map() }
+  };
+  const counts = { "data-observe-row": 0, "data-message-id": 0 };
+  document.querySelectorAll("*").forEach((element) => {
+    for (const [attributeName, definition] of Object.entries(definitions)) {
+      if (!element.hasAttribute(attributeName)) continue;
+      const original = element.getAttribute(attributeName) ?? "";
+      let replacement = definition.values.get(original);
+      if (!replacement) {
+        replacement = `${definition.prefix}-${definition.values.size + 1}`;
+        definition.values.set(original, replacement);
+      }
+      element.setAttribute(attributeName, replacement);
+      counts[attributeName] += 1;
+    }
+  });
+  return counts;
+}
+
 export function sanitizeChatHtml(rawHtml, options) {
   if (!options?.userSelector || !options?.assistantSelector) {
     throw new Error("必须显式提供已人工确认的用户节点和助手节点选择器。反猜测选择器被禁止。");
@@ -87,10 +141,13 @@ export function sanitizeChatHtml(rawHtml, options) {
   }
 
   document.querySelectorAll(REMOVED_ELEMENTS).forEach((element) => element.remove());
+  const anonymizedAttributes = anonymizeDocumentAttributes(document);
   document.querySelectorAll("*").forEach((element) => {
     let hasSensitiveAttribute = false;
     [...element.attributes].forEach((attribute) => {
       if (/^on/i.test(attribute.name)) {
+        element.removeAttribute(attribute.name);
+      } else if (attribute.name.toLowerCase() === "style") {
         element.removeAttribute(attribute.name);
       } else if (attribute.name.toLowerCase() === "href") {
         element.setAttribute("href", cleanHref(attribute.value, document.baseURI));
@@ -114,7 +171,8 @@ export function sanitizeChatHtml(rawHtml, options) {
   );
 
   const html = dom.serialize();
-  const findings = detectSensitiveContent(html);
+  const sensitiveFindings = detectSensitiveFindings(document, dom.window);
+  const findings = [...new Set(sensitiveFindings.map(({ type }) => type))];
   const after = countStructure(document);
   return {
     html,
@@ -122,15 +180,18 @@ export function sanitizeChatHtml(rawHtml, options) {
     report: {
       before,
       after,
+      anonymizedAttributes,
       matchedMessageNodes: { user: userNodes.length, assistant: assistantNodes.length },
       removed: {
         elements: before.elements - after.elements,
         scripts: before.scripts - after.scripts,
         styles: before.styles - after.styles,
         media: before.media - after.media,
-        eventAttributes: before.eventAttributes - after.eventAttributes
+        eventAttributes: before.eventAttributes - after.eventAttributes,
+        inlineStyleAttributes: before.inlineStyleAttributes - after.inlineStyleAttributes
       },
-      sensitiveFindingTypes: findings
+      sensitiveFindingTypes: findings,
+      sensitiveFindings
     }
   };
 }
@@ -163,7 +224,13 @@ export async function sanitizeFixtureFile({ input, output, userSelector, assista
   const rawHtml = await readFile(inputPath, "utf8");
   const result = sanitizeChatHtml(rawHtml, { userSelector, assistantSelector });
   if (result.findings.length > 0) {
-    throw new Error(`发现疑似敏感内容（${result.findings.join(", ")}），未生成最终 fixture。`);
+    const locations = [...new Set(result.report.sensitiveFindings.map((finding) => {
+      const context = finding.attributeName ? `属性 ${finding.attributeName}` : "文本";
+      return `${finding.type} 位于 <${finding.tagName}> ${context}`;
+    }))];
+    throw new Error(
+      `发现疑似敏感内容（${result.findings.join(", ")}）：${locations.join("；")}。未生成最终 fixture。`
+    );
   }
   await writeFile(outputPath, result.html, { encoding: "utf8", flag: "wx" });
   await writeFile(`${outputPath}.report.json`, `${JSON.stringify(result.report, null, 2)}\n`, {

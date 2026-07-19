@@ -70,7 +70,7 @@ describe("DeepSeek fixture sanitizer", () => {
     expect(detectSensitiveContent("uploaded private-notes.pdf")).toContain("filename");
   });
 
-  it("rejects raw input placed in the Git fixture directory", async () => {
+  it("rejects raw input placed anywhere in the Git repository", async () => {
     const testDirectory = path.dirname(fileURLToPath(import.meta.url));
     const fixtureInput = path.resolve(testDirectory, "../fixtures/deepseek/ordinary-completed.html");
     await expect(
