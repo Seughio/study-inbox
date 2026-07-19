@@ -7,6 +7,7 @@
     "build": "node tools/build.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src tests tools --max-warnings=0",
+    "sanitize:chat": "node tools/sanitize-chat-fixture.mjs",
     "sanitize:deepseek": "node tools/sanitize-deepseek-fixture.mjs",
     "test": "vitest run"
   },

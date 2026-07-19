@@ -17,35 +17,69 @@
       </dl>
       <button id="retry" type="button">立即重试</button>
       <p id="message" role="status"></p>
+
       <details class="recon">
-        <summary>DeepSeek DOM 侦察（开发工具）</summary>
+        <summary>DeepSeek 侦察（开发工具）</summary>
         <label class="toggle">
-          <input id="recon-mode" type="checkbox" /> 我已启用侦察开发模式
+          <input id="deepseek-recon-mode" type="checkbox" /> 我已启用 DeepSeek 侦察
         </label>
         <p>默认不运行、不读取正文。仅用于全新脱敏对话。</p>
-        <button id="recon-authorize" type="button" disabled>主动授权 DeepSeek 页面</button>
-        <button id="recon-inspect" type="button" disabled>导出结构快照</button>
-        <button id="recon-select" type="button" disabled>选择单个对话节点</button>
-        <section id="recon-preview" class="recon-preview" hidden>
-          <h2>已选中节点</h2>
+        <button id="deepseek-recon-authorize" type="button" disabled>主动授权 DeepSeek 页面</button>
+        <button id="deepseek-recon-revoke" type="button" disabled>撤销 DeepSeek 页面权限</button>
+        <button id="deepseek-recon-inspect" type="button" disabled>导出结构快照</button>
+        <button id="deepseek-recon-select" type="button" disabled>选择单个对话节点</button>
+        <section id="deepseek-recon-preview" class="recon-preview" hidden>
+          <h2>DeepSeek 已选中节点</h2>
           <dl>
-            <dt>标签名</dt><dd id="recon-node">无</dd>
-            <dt>class</dt><dd id="recon-classes">无</dd>
-            <dt>文本长度</dt><dd id="recon-text-length">0</dd>
-            <dt>HTML 字符数</dt><dd id="recon-html-length">0</dd>
-            <dt>子节点数量</dt><dd id="recon-child-count">0</dd>
-            <dt>选中时间</dt><dd id="recon-selected-at">无</dd>
-            <dt>来源域名</dt><dd id="recon-source-domain">无</dd>
+            <dt>标签名</dt><dd id="deepseek-recon-node">无</dd>
+            <dt>class</dt><dd id="deepseek-recon-classes">无</dd>
+            <dt>文本长度</dt><dd id="deepseek-recon-text-length">0</dd>
+            <dt>HTML 字符数</dt><dd id="deepseek-recon-html-length">0</dd>
+            <dt>子节点数量</dt><dd id="deepseek-recon-child-count">0</dd>
+            <dt>选中时间</dt><dd id="deepseek-recon-selected-at">无</dd>
+            <dt>来源域名</dt><dd id="deepseek-recon-source-domain">无</dd>
           </dl>
-          <p id="recon-warning" class="recon-warning" role="alert" hidden></p>
-          <label for="recon-debug">可复制节点摘要（不含正文）</label>
-          <textarea id="recon-debug" rows="7" readonly></textarea>
-          <button id="recon-reselect" type="button">重新选择</button>
-          <button id="recon-clear" type="button">清除选择</button>
-          <button id="recon-read" type="button">读取待脱敏 HTML</button>
+          <p id="deepseek-recon-warning" class="recon-warning" role="alert" hidden></p>
+          <label for="deepseek-recon-debug">可复制节点摘要（不含正文）</label>
+          <textarea id="deepseek-recon-debug" rows="7" readonly></textarea>
+          <button id="deepseek-recon-reselect" type="button">重新选择</button>
+          <button id="deepseek-recon-clear" type="button">清除 DeepSeek 选择</button>
+          <button id="deepseek-recon-read" type="button">读取待脱敏 HTML</button>
         </section>
-        <textarea id="recon-output" rows="8" readonly aria-label="侦察输出"></textarea>
-        <p id="recon-message" role="status"></p>
+        <textarea id="deepseek-recon-output" rows="8" readonly aria-label="DeepSeek 侦察输出"></textarea>
+        <p id="deepseek-recon-message" role="status"></p>
+      </details>
+
+      <details class="recon">
+        <summary>豆包侦察（开发工具）</summary>
+        <label class="toggle">
+          <input id="doubao-recon-mode" type="checkbox" /> 我已启用豆包侦察
+        </label>
+        <p>仅支持已确认的普通对话页 `/chat/&lt;conversation-id&gt;`。</p>
+        <button id="doubao-recon-authorize" type="button" disabled>主动授权豆包页面</button>
+        <button id="doubao-recon-revoke" type="button" disabled>撤销豆包页面权限</button>
+        <button id="doubao-recon-inspect" type="button" disabled>导出结构快照</button>
+        <button id="doubao-recon-select" type="button" disabled>选择单个对话节点</button>
+        <section id="doubao-recon-preview" class="recon-preview" hidden>
+          <h2>豆包已选中节点</h2>
+          <dl>
+            <dt>标签名</dt><dd id="doubao-recon-node">无</dd>
+            <dt>class</dt><dd id="doubao-recon-classes">无</dd>
+            <dt>文本长度</dt><dd id="doubao-recon-text-length">0</dd>
+            <dt>HTML 字符数</dt><dd id="doubao-recon-html-length">0</dd>
+            <dt>子节点数量</dt><dd id="doubao-recon-child-count">0</dd>
+            <dt>选中时间</dt><dd id="doubao-recon-selected-at">无</dd>
+            <dt>来源域名</dt><dd id="doubao-recon-source-domain">无</dd>
+          </dl>
+          <p id="doubao-recon-warning" class="recon-warning" role="alert" hidden></p>
+          <label for="doubao-recon-debug">可复制节点摘要（不含正文）</label>
+          <textarea id="doubao-recon-debug" rows="7" readonly></textarea>
+          <button id="doubao-recon-reselect" type="button">重新选择</button>
+          <button id="doubao-recon-clear" type="button">清除豆包选择</button>
+          <button id="doubao-recon-read" type="button">读取待脱敏 HTML</button>
+        </section>
+        <textarea id="doubao-recon-output" rows="8" readonly aria-label="豆包侦察输出"></textarea>
+        <p id="doubao-recon-message" role="status"></p>
       </details>
     </main>
     <script type="module" src="index.js"></script>

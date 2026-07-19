@@ -154,7 +154,7 @@ describe("privacy-preserving DOM inspector", () => {
     });
     expect(summary?.textLength).toBeGreaterThan(20);
     const pageRecord = (globalThis as Record<string, unknown>)[
-      "__studyInboxPendingDeepSeekNode"
+      "__studyInboxPendingReconNode_deepseek"
     ] as { dataAttributes: unknown; ariaAttributes: unknown };
     expect(pageRecord.dataAttributes).toEqual([{ name: "data-state", value: "complete" }]);
     expect(pageRecord.ariaAttributes).toEqual([{ name: "aria-live", value: "polite" }]);
@@ -205,6 +205,24 @@ describe("privacy-preserving DOM inspector", () => {
     clearSelectedNode();
     expect(readSelectedNodeHtml()).toBeNull();
     expect(getSelectedNodeSummary()).toBeNull();
+  });
+
+  it("keeps page-memory selections isolated by site", () => {
+    const target = document.createElement("article");
+    target.textContent = "synthetic answer long enough for isolated selection";
+    document.body.append(target);
+    setRect(target);
+
+    armSingleNodeSelection("deepseek");
+    hover(target);
+    key("Enter");
+    armSingleNodeSelection("doubao");
+    hover(target);
+    key("Enter");
+
+    clearSelectedNode("doubao");
+    expect(readSelectedNodeHtml("doubao")).toBeNull();
+    expect(readSelectedNodeHtml("deepseek")).toContain("synthetic answer");
   });
 
   it("contains no code that reads cookies, browser storage, or network data", () => {

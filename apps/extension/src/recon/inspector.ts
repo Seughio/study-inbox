@@ -58,7 +58,8 @@ export interface StoredNodeSelection {
 }
 
 /** Self-contained so chrome.scripting can serialize it without module globals. */
-export function inspectCurrentPage(): StructuralSnapshot {
+export function inspectCurrentPage(siteKey = "deepseek"): StructuralSnapshot {
+  void siteKey;
   const maximumNodes = 2000;
   const maximumDepth = 18;
   let nodeCount = 0;
@@ -123,8 +124,8 @@ export function inspectCurrentPage(): StructuralSnapshot {
 }
 
 /** Self-contained interactive selector for chrome.scripting serialization. */
-export function armSingleNodeSelection(): { armed: true } {
-  const stateKey = "__studyInboxDeepSeekReconSelectionState";
+export function armSingleNodeSelection(siteKey = "deepseek"): { armed: true } {
+  const stateKey = `__studyInboxReconSelectionState_${siteKey}`;
   const pageMemory = globalThis as Record<string, unknown>;
   const previousState = pageMemory[stateKey] as { cleanup?: () => void } | undefined;
   previousState?.cleanup?.();
@@ -285,7 +286,7 @@ export function armSingleNodeSelection(): { armed: true } {
 
   function confirmSelection(): void {
     if (!current) return;
-    const selectionKey = "__studyInboxPendingDeepSeekNode";
+    const selectionKey = `__studyInboxPendingReconNode_${siteKey}`;
     const rect = current.getBoundingClientRect();
     const outerHTML = current.outerHTML;
     const ancestors: string[] = [];
@@ -391,26 +392,26 @@ export function armSingleNodeSelection(): { armed: true } {
   return { armed: true };
 }
 
-export function getSelectedNodeSummary(): SelectedNodeSummary | null {
-  const selectionKey = "__studyInboxPendingDeepSeekNode";
+export function getSelectedNodeSummary(siteKey = "deepseek"): SelectedNodeSummary | null {
+  const selectionKey = `__studyInboxPendingReconNode_${siteKey}`;
   const selection = (globalThis as Record<string, unknown>)[selectionKey] as StoredNodeSelection | undefined;
   return selection?.summary ?? null;
 }
 
-export function readSelectedNodeHtml(): string | null {
-  const selectionKey = "__studyInboxPendingDeepSeekNode";
+export function readSelectedNodeHtml(siteKey = "deepseek"): string | null {
+  const selectionKey = `__studyInboxPendingReconNode_${siteKey}`;
   const selection = (globalThis as Record<string, unknown>)[selectionKey] as StoredNodeSelection | undefined;
   return selection?.outerHTML ?? null;
 }
 
-export function clearSelectedNode(): { cleared: true } {
-  const selectionKey = "__studyInboxPendingDeepSeekNode";
+export function clearSelectedNode(siteKey = "deepseek"): { cleared: true } {
+  const selectionKey = `__studyInboxPendingReconNode_${siteKey}`;
   delete (globalThis as Record<string, unknown>)[selectionKey];
   return { cleared: true };
 }
 
-export function cancelNodeSelection(): { cancelled: true } {
-  const stateKey = "__studyInboxDeepSeekReconSelectionState";
+export function cancelNodeSelection(siteKey = "deepseek"): { cancelled: true } {
+  const stateKey = `__studyInboxReconSelectionState_${siteKey}`;
   const pageMemory = globalThis as Record<string, unknown>;
   const state = pageMemory[stateKey] as { cleanup?: () => void } | undefined;
   state?.cleanup?.();

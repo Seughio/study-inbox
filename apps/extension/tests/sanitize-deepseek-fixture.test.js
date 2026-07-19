@@ -80,7 +80,7 @@ describe("DeepSeek fixture sanitizer", () => {
         userSelector: ".user",
         assistantSelector: ".assistant"
       })
-    ).rejects.toThrow("原始 HTML 不得放入 Git fixture 目录");
+    ).rejects.toThrow("原始 HTML 不得放入 Git 仓库");
   });
 
   it("does not write a final fixture when sanitized output still looks sensitive", async () => {

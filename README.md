@@ -52,6 +52,15 @@ DeepSeek 侦察、单节点导出和隐私检查流程见
 [Extension 手工验收指南](docs/extension-manual-acceptance.md)。推理、停止、重生成、编辑、
 文件、图片、语音和联网引用仍不支持。
 
+## Milestone 2C-0 豆包 DOM 侦察准备
+
+产品负责人确认的普通对话页形态为 `https://www.doubao.com/chat/<conversation-id>`。
+扩展只声明 `https://www.doubao.com/*` 可选权限，并在运行时进一步限制普通对话路径；
+首页和 hash 路由不会启用侦察。本阶段不注册豆包 content script、不实现
+`DoubaoAdapter`。人工采集步骤见
+[豆包 DOM 人工侦察指南](docs/doubao-dom-reconnaissance.md)，当前证据状态见
+[豆包选择器侦察报告](docs/doubao-selector-report.md)。
+
 ## 自动检查
 
 ```powershell
