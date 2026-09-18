@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Study Inbox",
   "version": "0.2.0",
-  "description": "Local fixture capture and an opt-in minimal DeepSeek conversation adapter.",
+  "description": "Local fixture capture with opt-in minimal DeepSeek and Doubao adapters.",
   "permissions": ["storage", "scripting", "alarms"],
   "host_permissions": [
     "http://127.0.0.1:4173/*",

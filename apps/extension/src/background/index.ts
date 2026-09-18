@@ -1,11 +1,13 @@
 import { BackgroundController } from "./controller";
 import type { RuntimeRequest, RuntimeResponse } from "../shared/messages";
 import { installDeepSeekContentScriptRegistration } from "./deepseek-content-registration";
+import { installDoubaoContentScriptRegistration } from "./doubao-content-registration";
 import { RETRY_ALARM_NAME, RetryScheduler } from "./retry-scheduler";
 
 const controller = new BackgroundController();
 const retryScheduler = new RetryScheduler(controller);
 installDeepSeekContentScriptRegistration();
+installDoubaoContentScriptRegistration();
 void retryScheduler.initialize();
 
 chrome.runtime.onMessage.addListener(

@@ -43,6 +43,22 @@ RetryQueue 使用 `chrome.storage.local` 持久化；队列非空时由 `chrome.
 完成属性时，操作区只作为生成中阻断门槛，最终完成仍由公共稳定窗口判断。不确定或未
 支持的推理、停止、重生成、编辑、文件和联网引用结构安全失败。
 
+### Milestone 2C-1 豆包最小适配器
+
+DoubaoAdapter 只在用户授予 `https://www.doubao.com/*` 可选权限后动态注册 content
+script，注册 match 收窄为 `https://www.doubao.com/chat/*`，运行时再拒绝首页、空会话路径、
+hash 路由和非目标 origin。它依据四份真实脱敏 fixture 的消息壳、普通文本插件、发送/接收
+操作区和 `data-streaming` 结构提取单轮及三轮普通文字问答。
+
+DoubaoAdapter 与 DeepSeekAdapter 共用 CompletionDetector、TurnProcessor、事件 ID、
+background、RetryQueue、RetryScheduler 和 FastAPI 幂等链路。两站点还共用小型
+SiteCaptureSession/TurnSuppressionStore 核心，但各自保留独立 source、conversation ID 和
+suppression storage key。暂停记录只保存不可逆 SHA-256 标识，不保存正文。
+
+豆包消息 ID 和虚拟行 ID 只检查属性存在，不读取具体值。适配器不依赖 URL 会话 ID、查询
+参数、inline style、尺寸、按钮文案或构建哈希 class。链接、代码、表格、媒体、额外插件、
+多个助手版本及其他无法可靠判断的结构安全失败。
+
 ## Desktop Agent
 
 职责：

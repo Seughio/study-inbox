@@ -28,11 +28,13 @@ describe("site reconnaissance wiring", () => {
     expect(inspector).not.toMatch(/chrome\.storage|localStorage|sessionStorage/);
   });
 
-  it("does not add a Doubao adapter or Doubao content-script registration", async () => {
+  it("keeps Doubao reconnaissance separate from formal capture wiring", async () => {
     const popup = await source("src/popup/index.ts");
     const background = await source("src/background/index.ts");
     const content = await source("src/content/index.ts");
-    expect(`${popup}\n${background}\n${content}`).not.toContain("DoubaoAdapter");
-    expect(background).not.toMatch(/doubao-content-registration/i);
+    expect(popup).not.toContain("DoubaoAdapter");
+    expect(popup).not.toMatch(/doubao-content-registration/i);
+    expect(background).toMatch(/installDoubaoContentScriptRegistration/);
+    expect(content).toContain("DoubaoAdapter");
   });
 });

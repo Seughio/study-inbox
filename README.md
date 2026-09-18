@@ -8,6 +8,11 @@ Milestone 2B-1 增加了由真实脱敏 fixture 验证的最小 DeepSeekAdapter�
 和稳定窗口流式完成，不读取 Cookie、Web Storage 或页面网络请求。项目仍不包含文件
 监控、真实 LLM 或复杂前端。
 
+Milestone 2C-1 增加最小 DoubaoAdapter，只在用户授予
+`https://www.doubao.com/*` 可选权限后对 `/chat/<conversation-id>` 普通对话页运行。它支持
+普通纯文字单轮/三轮问答、流式稳定完成、刷新幂等、暂停永久抑制和既有离线自动重试链路，
+不读取 Cookie、Web Storage 或页面网络请求。
+
 ## 5 分钟快速验收
 
 环境要求：Windows 10/11、PowerShell 和 Python 3.11 或更高版本。
@@ -52,12 +57,12 @@ DeepSeek 侦察、单节点导出和隐私检查流程见
 [Extension 手工验收指南](docs/extension-manual-acceptance.md)。推理、停止、重生成、编辑、
 文件、图片、语音和联网引用仍不支持。
 
-## Milestone 2C-0 豆包 DOM 侦察准备
+## Milestone 2C-1 豆包最小适配
 
 产品负责人确认的普通对话页形态为 `https://www.doubao.com/chat/<conversation-id>`。
 扩展只声明 `https://www.doubao.com/*` 可选权限，并在运行时进一步限制普通对话路径；
-首页和 hash 路由不会启用侦察。本阶段不注册豆包 content script、不实现
-`DoubaoAdapter`。人工采集步骤见
+首页和 hash 路由不会启动正式采集。授权后动态 content script 只匹配 `/chat/*`，适配器
+对无法确认角色、完成态或普通文本结构的内容安全失败。人工采集步骤见
 [豆包 DOM 人工侦察指南](docs/doubao-dom-reconnaissance.md)，当前证据状态见
 [豆包选择器侦察报告](docs/doubao-selector-report.md)。
 

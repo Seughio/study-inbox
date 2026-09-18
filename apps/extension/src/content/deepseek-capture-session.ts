@@ -1,27 +1,15 @@
 import type { DeepSeekAdapter } from "../adapters/deepseek-adapter";
-import type { TurnSnapshot } from "../adapters/types";
+import { SiteCaptureSession, type TurnConsumer } from "./site-capture-session";
 import type { DeepSeekSuppressionRegistry } from "./deepseek-suppression";
 
-export interface DeepSeekTurnConsumer {
-  process(snapshot: TurnSnapshot): void;
-}
+export type DeepSeekTurnConsumer = TurnConsumer;
 
-export class DeepSeekCaptureSession {
+export class DeepSeekCaptureSession extends SiteCaptureSession {
   public constructor(
-    private readonly adapter: DeepSeekAdapter,
-    private readonly consumer: DeepSeekTurnConsumer,
-    private readonly suppressed: DeepSeekSuppressionRegistry
-  ) {}
-
-  public async scan(enabled: boolean): Promise<void> {
-    for (const element of this.adapter.getTurnElements()) {
-      const snapshot = this.adapter.extractTurnSnapshot(element);
-      if (!snapshot) continue;
-      if (!enabled) {
-        await this.suppressed.suppress(snapshot);
-      } else if (!(await this.suppressed.isSuppressed(snapshot))) {
-        this.consumer.process(snapshot);
-      }
-    }
+    adapter: DeepSeekAdapter,
+    consumer: DeepSeekTurnConsumer,
+    suppressed: DeepSeekSuppressionRegistry
+  ) {
+    super(adapter, consumer, suppressed);
   }
 }

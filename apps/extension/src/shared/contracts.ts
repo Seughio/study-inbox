@@ -1,4 +1,4 @@
-export type ConversationSource = "chatgpt" | "deepseek" | "local-fixture";
+export type ConversationSource = "chatgpt" | "deepseek" | "doubao" | "local-fixture";
 
 export interface ConversationEvent {
   event_id: string;

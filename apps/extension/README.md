@@ -9,10 +9,15 @@ Milestone 2B-1 增加由真实脱敏 fixture 验证的最小 `DeepSeekAdapter`�
 仅在用户授予可选主机权限后动态注册。DOM 侦察入口仍默认关闭；扩展不读取 Cookie、
 Web Storage 或页面网络请求，也不会自动保存未脱敏 DOM。
 
+Milestone 2C-1 增加由四份真实脱敏 fixture 验证的最小 `DoubaoAdapter`。它只支持
+`https://www.doubao.com/chat/<conversation-id>` 普通纯文字问答、三轮顺序配对和稳定窗口
+完成；授权后动态 content script match 仅为 `https://www.doubao.com/chat/*`。复杂卡片、
+代码、表格、媒体、多个助手版本及不确定结构安全失败。
+
 ## 数据流
 
 ```text
-LocalFixtureAdapter 或 DeepSeekAdapter
+LocalFixtureAdapter、DeepSeekAdapter 或 DoubaoAdapter
   → content script / CompletionDetector / TurnProcessor
   → background service worker
   → LocalApiClient 或 chrome.storage.local RetryQueue
@@ -20,7 +25,7 @@ LocalFixtureAdapter 或 DeepSeekAdapter
   → FastAPI → SQLite → Markdown
 ```
 
-适配器不得调用 API 或管理队列。两个适配器复用同一个 CompletionDetector、
+适配器不得调用 API 或管理队列。三个适配器复用同一个 CompletionDetector、
 TurnProcessor、后台投递与 RetryQueue。后台固定 API origin，不接受页面传入 URL。
 
 RetryQueue 非空时，后台创建名为 `study-inbox-retry-queue` 的 1 分钟周期 alarm；新事件
@@ -30,7 +35,7 @@ Worker 每次启动都会从 `chrome.storage.local` 恢复调度状态，不依�
 时间为 1 分钟；设备休眠或浏览器节流可能造成额外延迟。
 
 Manifest 必需权限为 `storage`、`scripting`、`alarms`：分别用于持久队列/设置、授权后
-动态注册 DeepSeek content script，以及 MV3 Service Worker 的低频持久唤醒。
+动态注册 DeepSeek/豆包 content script，以及 MV3 Service Worker 的低频持久唤醒。
 
 ## 文本规范化与 event_id
 
@@ -62,8 +67,7 @@ DOM 重建和重复扫描不会改变 ID。推理区不进入最终答案或哈�
 DOM 侦察与脱敏流程见 `docs/deepseek-dom-reconnaissance.md`，选择器证据状态见
 `docs/deepseek-selector-report.md`。真实脱敏 fixture 的状态见 `fixtures/deepseek/README.md`。
 
-Milestone 2C-0 仅为产品负责人确认的豆包普通对话页
-`https://www.doubao.com/chat/<conversation-id>` 增加独立、按需授权的 DOM 侦察入口。
-`https://www.doubao.com/*` 只存在于 `optional_host_permissions`；本阶段不注册豆包 content
-script，也不包含 `DoubaoAdapter`。采集与脱敏步骤见
-`docs/doubao-dom-reconnaissance.md`，证据状态见 `docs/doubao-selector-report.md`。
+Milestone 2C-1 在独立 DOM 侦察入口之外增加最小 `DoubaoAdapter`。
+`https://www.doubao.com/*` 仍只存在于 `optional_host_permissions`；侦察页面内存与正式采集
+session 相互独立。采集与脱敏步骤见 `docs/doubao-dom-reconnaissance.md`，正式候选结构、
+证据边界和拒绝项见 `docs/doubao-selector-report.md`。
