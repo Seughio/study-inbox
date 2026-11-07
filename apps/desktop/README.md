@@ -77,3 +77,11 @@ python -m mypy apps/desktop/src
 ```
 
 测试全部使用清理过的合成数据、临时 SQLite 数据库和临时导出目录。
+
+## Milestone 3A-0 知识库基础
+
+桌面端现在包含版本化的本地知识库 schema 和独立领域模型，同时保留现有
+`conversations` 表及 API 语义。`KnowledgeDocument`、虚拟 `Collection`、`Tag`、
+`Attachment`、`KnowledgeSource` 和 `IngestEvent` 的边界、数据所有权规则及后续
+物化流程见 [知识库数据模型](../../docs/knowledge-library-data-model.md)。本阶段尚未
+提供知识库 CRUD、全文搜索或桌面 UI，也不会自动复制或移动用户文件。

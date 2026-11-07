@@ -6,6 +6,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from study_inbox.models import Classification, ConversationEvent, StoredConversation
+from study_inbox.schema import DatabaseSchema
 
 
 class ConversationRepository:
@@ -13,26 +14,7 @@ class ConversationRepository:
         self.database_path = database_path
 
     def initialize(self) -> None:
-        self.database_path.parent.mkdir(parents=True, exist_ok=True)
-        with self._connection() as connection:
-            connection.execute(
-                """
-                CREATE TABLE IF NOT EXISTS conversations (
-                    event_id TEXT PRIMARY KEY,
-                    source TEXT NOT NULL,
-                    conversation_id TEXT,
-                    question TEXT NOT NULL,
-                    answer TEXT NOT NULL,
-                    captured_at TEXT NOT NULL,
-                    is_learning INTEGER NOT NULL,
-                    subject TEXT NOT NULL,
-                    topic TEXT NOT NULL,
-                    normalized_question TEXT NOT NULL,
-                    answer_summary TEXT NOT NULL,
-                    confidence REAL NOT NULL
-                )
-                """
-            )
+        DatabaseSchema(self.database_path).initialize()
 
     def add(
         self, event: ConversationEvent, classification: Classification
@@ -104,6 +86,7 @@ class ConversationRepository:
     @contextmanager
     def _connection(self) -> Iterator[sqlite3.Connection]:
         connection = sqlite3.connect(self.database_path)
+        connection.execute("PRAGMA foreign_keys = ON")
         connection.row_factory = sqlite3.Row
         try:
             with connection:

@@ -82,3 +82,18 @@ Extension → HTTP → 127.0.0.1 local service
 产品化阶段：
 
 Extension → Chrome Native Messaging → Desktop Agent
+
+## Milestone 3A：本地知识工作台
+
+从 Milestone 3A 起，桌面应用是用户整理和访问知识的主要界面，浏览器扩展与
+未来的文件导入器是可靠、受限的内容入口。采集事件与用户可编辑文档分离：
+
+```text
+Extension / file import → IngestEvent → Inbox KnowledgeDocument
+                                      → Collection / Tag / Attachment
+```
+
+`Collection` 是虚拟文件夹，不对应磁盘移动。附件默认引用原文件；只有用户明确
+授权后才能建立受管副本或执行文件移动。现有 `conversations` 接口、去重、暂停
+抑制和离线重试语义保持不变。详细模型和迁移边界见
+[Milestone 3A-0 数据模型](docs/knowledge-library-data-model.md)。
