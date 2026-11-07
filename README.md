@@ -6,7 +6,11 @@ SQLite 和 Markdown 闭环上增加了平台无关的 Manifest V3 扩展公共�
 Milestone 2B-1 增加了由真实脱敏 fixture 验证的最小 DeepSeekAdapter。它只在用户授予
 可选 `https://chat.deepseek.com/*` 权限后运行，支持普通文字问答、三轮配对、刷新去重
 和稳定窗口流式完成，不读取 Cookie、Web Storage 或页面网络请求。项目仍不包含文件
-监控、真实 LLM 或复杂前端。
+监控或复杂前端。
+
+桌面服务默认使用离线的 MockClassifier；设置 `STUDY_INBOX_CLASSIFIER=llm` 和
+`STUDY_INBOX_LLM_API_KEY` 后改用真实 LLM（默认 DeepSeek，OpenAI 兼容接口）完成分类、
+问题改写和摘要，详见 [Desktop README](apps/desktop/README.md#真实-llm-分类)。
 
 Milestone 2C-1 增加最小 DoubaoAdapter，只在用户授予
 `https://www.doubao.com/*` 可选权限后对 `/chat/<conversation-id>` 普通对话页运行。它支持

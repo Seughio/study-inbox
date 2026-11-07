@@ -2,8 +2,13 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from typing import Protocol
 
 from study_inbox.models import Classification, ConversationEvent
+
+
+class Classifier(Protocol):
+    def classify(self, event: ConversationEvent) -> Classification: ...
 
 
 @dataclass(frozen=True)

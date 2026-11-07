@@ -1,8 +1,8 @@
 # Study Inbox Desktop
 
-Milestone 1.5 提供一个仅用于本机开发和验收的 FastAPI 服务。它接收单轮问答事件，
-使用确定性的 `MockClassifier` 分类，将结果保存在 SQLite 中，并按学科导出
-Markdown。当前没有浏览器插件、文件监控或真实 LLM 集成。
+本地 FastAPI 服务接收单轮问答事件，用分类器判断学科、知识点、独立问题和回答摘要，
+将结果保存在 SQLite 中，并按学科导出 Markdown。默认使用确定性的
+`MockClassifier`；可按下文“真实 LLM 分类”选择性启用 `LLMClassifier`。
 
 ## 环境要求
 
@@ -54,6 +54,33 @@ Invoke-RestMethod -Method Post `
 - `POST /api/v1/conversations`
 - `GET /api/v1/conversations`
 - `POST /api/v1/export/markdown`
+
+## 真实 LLM 分类
+
+默认不调用任何远程服务。设置以下环境变量后，服务改用 `LLMClassifier`，通过
+OpenAI 兼容的 `/chat/completions` 接口（默认 DeepSeek）完成学习判断、学科与知识点
+识别、独立问题改写和回答摘要：
+
+```powershell
+$env:STUDY_INBOX_CLASSIFIER = "llm"
+$env:STUDY_INBOX_LLM_API_KEY = "<你的 API Key>"
+# 可选：
+# $env:STUDY_INBOX_LLM_BASE_URL = "https://api.deepseek.com"
+# $env:STUDY_INBOX_LLM_MODEL = "deepseek-chat"
+# $env:STUDY_INBOX_LLM_TIMEOUT = "30"
+.\scripts\start.ps1
+```
+
+- 启用后，每条**新**问答的问题和回答（各自截断到 4000 / 8000 字）会发送到所配置的
+  LLM 服务；包括非学习内容，因为是否学习正是由模型判断的。重复 `event_id` 直接返回
+  已有记录，不会再次调用模型。
+- 模型输出经过校验：学科必须是安全的小写 slug（会成为 Markdown 文件名），字段缺失或
+  非法时重试一次。
+- 模型不可用（网络错误、超时、额度不足、输出持续非法）时接口返回 `503` 且不写入记录，
+  扩展会把事件放入离线重试队列稍后重发。不会回退到 MockClassifier，因为已写入的
+  分类结果不会被覆盖。
+- API Key 只从环境变量读取，不写入数据库、日志、`/health` 或错误信息。
+- 启用前已经用 MockClassifier 写入的记录保持不变。
 
 输入由仓库根目录的 `contracts/conversation-event.schema.json` 校验。
 相同 `event_id` 的后续请求不会覆盖第一次写入的记录。非学习事件会保留以保证
